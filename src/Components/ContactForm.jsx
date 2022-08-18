@@ -1,11 +1,15 @@
-import PropTypes from 'prop-types';
+import { useState } from 'react';
 import shortid from 'shortid';
 import styles from '../Styles/styles.module.css';
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact } from '../redux/contacts';
 
-export default function Form({ onSubmit }) {
+export default function Form() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+
+  const contacts = useSelector(state => state.contacts.items);
+  const dispatch = useDispatch();
 
   const nameInputId = shortid.generate();
 
@@ -19,15 +23,31 @@ export default function Form({ onSubmit }) {
     }
   };
 
-  const handleSubmit = e => {
+  const handleAddContact = e => {
     e.preventDefault();
-    onSubmit(name, number);
+    setContact({
+      id: shortid.generate(),
+      name,
+      number,
+    });
     setName('');
     setNumber('');
   };
 
+  const setContact = value => {
+    if (
+      contacts.every(
+        ({ name }) => name.toLowerCase() !== value.name.toLowerCase()
+      )
+    ) {
+      dispatch(addContact(value));
+    } else {
+      alert(`${value.name} is already in contacts`);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleAddContact}>
       <label htmlFor={nameInputId} className={styles.label}>
         Name
         <input
@@ -58,7 +78,3 @@ export default function Form({ onSubmit }) {
     </form>
   );
 }
-
-Form.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
